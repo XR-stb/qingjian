@@ -54,6 +54,35 @@ pub fn run(config: Option<&Path>, directory: &Path) -> Result<(), Box<dyn std::e
             Ok(())
         };
 
+    click(
+        &mut runner,
+        Key::ROOT.child("nav").child(PageId::Vocabulary),
+    )?;
+    // 截图使用示例原句，避免把本机的输入记录带进演示图。
+    runner.app_mut().vocabulary = Some(crate::vocabulary::Vocabulary::with_book(
+        qingjian_learning::VocabularyBook::default(),
+        qingjian_core::Language::English,
+    ));
+    if let Some(book) = runner.app_mut().vocabulary.as_mut() {
+        book.view = crate::vocabulary::View::Sentences;
+        book.sentences = vec![
+            (
+                "我晚点把日志发给你。".into(),
+                3,
+                Some("I’ll send you the logs later.".into()),
+            ),
+            (
+                "弄好了喊我一声。".into(),
+                2,
+                Some("Let me know when it’s ready.".into()),
+            ),
+            ("明天再聊。".into(), 1, None),
+        ];
+    }
+    runner.rebuild(SCALE, SIZE, Instant::now())?;
+    click(&mut runner, Key::ROOT.child(("review-sentence", 0usize)))?;
+    shot(&mut runner, "我常说的话：揭晓第一句")?;
+
     for page in PageId::ALL {
         click(&mut runner, Key::ROOT.child("nav").child(page))?;
         shot(&mut runner, page.label())?;

@@ -60,14 +60,36 @@ impl Engine {
     /// 上屏了一段没有现成译词的中文（整句、云端整句、分几次上屏拼成的一句）：释义兜底开着时交给它整段翻译，翻好了进相遇。
     pub(super) fn translate_for_encounter(&mut self, text: &str) {
         let language = self.translator.language();
-        if self.private
-            || language == Language::Chinese
-            || !self.gloss_filler.is_enabled()
-            || !worth_encounter(text)
-        {
+        if self.private || language == Language::Chinese || !worth_encounter(text) {
             return;
         }
-        self.gloss_filler.translate(language, text);
+        if self.gloss_filler.is_enabled() {
+            self.gloss_filler.translate(language, text);
+        }
+    }
+
+    fn save_local_sentence(&mut self, text: String) {
+        let language = self.translator.language();
+        if !self.private
+            && self.record_sentences
+            && language != Language::Chinese
+            && worth_encounter(&text)
+        {
+            self.vocabulary.record_encounter(&Encounter {
+                language,
+                text,
+                translation: String::new(),
+                reading: None,
+            });
+        }
+    }
+
+    /// 允许把写完的原句存进本机复习本；切换时丢掉未完成的半句。
+    pub fn set_record_sentences(&mut self, enabled: bool) {
+        if self.record_sentences != enabled {
+            self.examples.take_review();
+            self.record_sentences = enabled;
+        }
     }
 
     /// 当前学习语言的词汇汇总（偏好设置「统计」页）。
@@ -113,6 +135,11 @@ impl Engine {
         if self.private {
             return;
         }
+        if self.record_sentences && self.translator.language() != Language::Chinese {
+            for sentence in self.examples.review_text(text) {
+                self.save_local_sentence(sentence);
+            }
+        }
         let vocabulary = &mut self.vocabulary;
         let finished = self
             .examples
@@ -124,8 +151,16 @@ impl Engine {
         }
     }
 
+    /// 应用收到回车，结束已上屏的原句。
+    pub fn finish_review_sentence(&mut self) {
+        if let Some(sentence) = self.examples.take_review() {
+            self.save_local_sentence(sentence);
+        }
+    }
+
     /// 上文断开：手上那句话就算写完了。
     pub(super) fn finish_examples(&mut self) {
+        self.finish_review_sentence();
         let vocabulary = &mut self.vocabulary;
         let finished = self.examples.break_off(|language, word, source, example| {
             vocabulary.record_example(language, word, source, example);

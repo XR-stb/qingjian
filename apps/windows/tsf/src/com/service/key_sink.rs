@@ -50,6 +50,16 @@ impl ITfKeyEventSink_Impl for TextService_Impl {
         // 下一轮在组句外长按退格时第一记被吃、系统的自动重复被截断，
         // 表现为「只删一个就不动了」。
         if !eat {
+            if vk == 0x0D
+                && !self.shared.composing()
+                && self
+                    .input_settings
+                    .get()
+                    .is_some_and(|input| input.record_sentences)
+                && let Some(client) = self.engine.borrow_mut().as_mut()
+            {
+                let _ = client.sentence_boundary();
+            }
             self.shared.set_emptied_backspace(false);
         }
         Ok(eat.into())

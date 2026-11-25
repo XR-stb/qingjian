@@ -36,6 +36,10 @@ pub struct Vocabulary {
 
     pub view: View,
 
+    pub sentences: Vec<(String, usize, Option<String>)>,
+
+    pub revealed_sentence: Option<usize>,
+
     /// 时间线正在看的那天。
     pub day: Date,
 
@@ -100,6 +104,8 @@ impl Vocabulary {
         Self {
             book,
             view: View::default(),
+            sentences: Vec::new(),
+            revealed_sentence: None,
             day: today,
             encounters: Vec::new(),
             typed_days: BTreeSet::new(),
@@ -122,8 +128,12 @@ impl Vocabulary {
         self.reload();
     }
 
-    fn reload(&mut self) {
-        self.encounters = self.book.encounters(self.language);
+    pub fn reload(&mut self) {
+        let mut encounters = self.book.encounters(self.language);
+        self.sentences = review_sentences(&encounters);
+        self.revealed_sentence = None;
+        encounters.retain(|entry| !entry.translation.is_empty());
+        self.encounters = encounters;
     }
 
     /// 带它上屏的中文；老记录没有时英语查释义表补一个。
@@ -272,4 +282,55 @@ fn path() -> PathBuf {
         .map(|dirs| dirs.records())
         .unwrap_or_default()
         .join("user-vocab.tsv")
+}
+
+/// 同一语言里，同一句原话只占一行。云端译文可能早于本次复习记录到达。
+fn review_sentences(entries: &[LoggedEncounter]) -> Vec<(String, usize, Option<String>)> {
+    use std::collections::HashMap;
+
+    fn key(text: &str) -> &str {
+        text.trim()
+            .trim_end_matches(['。', '！', '？', '!', '?', '.'])
+            .trim_end()
+    }
+    let mut translations = HashMap::new();
+    for entry in entries.iter().filter(|item| !item.translation.is_empty()) {
+        translations.insert(key(&entry.text), &entry.translation);
+    }
+    let mut counts = HashMap::new();
+    let mut sentences = Vec::new();
+    for entry in entries
+        .iter()
+        .rev()
+        .filter(|item| item.translation.is_empty())
+    {
+        let source = key(&entry.text);
+        if source.is_empty() {
+            continue;
+        }
+        let index = *counts.entry(source).or_insert_with(|| {
+            sentences.push((
+                entry.text.clone(),
+                0usize,
+                translations.get(source).map(|s| (*s).clone()),
+            ));
+            sentences.len() - 1
+        });
+        sentences[index].1 += 1;
+    }
+    sentences
+}
+
+/// 等待网络时原句可能已被清空，不能让迟到的翻译把它恢复。
+pub fn save_translation(encounter: qingjian_core::Encounter) -> Result<(), String> {
+    let mut book = VocabularyBook::open(path());
+    if !book
+        .encounters(encounter.language)
+        .iter()
+        .any(|e| e.translation.is_empty() && e.text == encounter.text)
+    {
+        return Ok(());
+    }
+    book.record_encounter_at(&encounter, jiff::Zoned::now().datetime());
+    book.append_encounters().map_err(|error| error.to_string())
 }

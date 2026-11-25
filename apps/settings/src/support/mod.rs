@@ -52,6 +52,7 @@ pub enum Feature {
     /// Windows 的手动云联想与请求节奏设置。
     CloudRequestControls,
     /// 上屏的整句翻译后记进生词本（随释义兜底）。
+    SentenceReview,
     VocabularyTranslation,
     /// 双拼键位提示：候选窗旁画键盘。
     KeyHint,
@@ -83,7 +84,7 @@ pub enum Feature {
 
 impl Feature {
     #[cfg(test)]
-    pub const ALL: [Self; 37] = [
+    pub const ALL: [Self; 38] = [
         Self::AuxCode,
         Self::Schemes,
         Self::AutoPhrase,
@@ -108,6 +109,7 @@ impl Feature {
         Self::SystemTextReplacements,
         Self::ApiUsage,
         Self::CloudRequestControls,
+        Self::SentenceReview,
         Self::VocabularyTranslation,
         Self::KeyHint,
         Self::ShowTones,
@@ -172,6 +174,7 @@ impl Feature {
             Self::SystemTextReplacements => [Yes, No, No],
             Self::ApiUsage => [Yes, Yes, Yes],
             Self::CloudRequestControls => [Yes, Yes, Yes],
+            Self::SentenceReview => [Todo, Yes, Todo],
             Self::VocabularyTranslation => [Yes, Yes, Yes],
             // 符号面板只有 macOS 与 Windows 有
             Self::TranslatePanel => [Yes, Yes, No],
@@ -221,6 +224,7 @@ impl Feature {
             Self::SystemTextReplacements => "也用系统的文本替换",
             Self::ApiUsage => "云服务用量统计",
             Self::CloudRequestControls => "按需云联想与请求节奏",
+            Self::SentenceReview => "原句复习",
             Self::VocabularyTranslation => "生词本整句翻译",
             Self::KeyHint => "双拼键位提示",
             Self::ShowTones => "拼音行显示声调",
@@ -275,6 +279,7 @@ impl Feature {
                 (PageId::Cloud, "cloud.min_interval"),
                 (PageId::Shortcuts, "shortcut.predict"),
             ],
+            Self::SentenceReview => &[(PageId::Vocabulary, "vocabulary.save_sentences")],
             Self::VocabularyTranslation => &[(PageId::Cloud, "cloud.vocabulary_translation")],
             Self::TranslatePanel => &[(PageId::Shortcuts, "shortcut.translate_panel")],
             Self::KeyHint => &[(PageId::Input, "input.key_hint")],

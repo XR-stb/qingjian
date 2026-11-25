@@ -268,6 +268,8 @@ impl Router {
         self.engine.set_traditional(config.general.traditional());
         self.engine.set_learning(config.general.learning);
         self.engine
+            .set_record_sentences(config.general.record_sentences);
+        self.engine
             .set_auto_phrase(config.auto_phrase.enabled, config.auto_phrase.max_chars);
         self.engine.set_mode_keys(config.shortcut.mode);
         self.engine

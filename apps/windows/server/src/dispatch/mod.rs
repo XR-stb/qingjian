@@ -255,6 +255,7 @@ impl Router {
             english_mode: self.config.english_mode,
             double_shift_input: self.config.double_shift_input,
             shift_letter_compose: self.config.shift_letter_compose,
+            record_sentences: self.config.record_sentences,
             restore_mode: self.config.default_english || self.config.remember_mode_per_app,
             toggle_traditional: self.config.toggle_traditional,
             english_candidates: self.config.english_candidates_in(app),

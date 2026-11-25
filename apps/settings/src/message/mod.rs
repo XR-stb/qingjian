@@ -119,6 +119,8 @@ pub enum Message {
     VocabularySort(Sort),
     /// 生词本翻到第几页（从 0 起）。
     VocabularyPage(usize),
+    VocabularyReveal(usize),
+    VocabularyTranslate(usize),
     /// 标这个词认识（`false` 取消）。
     VocabularyKnown(String, bool),
     VocabularyRemove(String),

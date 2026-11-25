@@ -82,6 +82,9 @@ pub struct Settings {
     /// 输入框的编辑状态；回车或离开时才存进配置。
     pub fields: HashMap<FieldId, TextEdit>,
 
+    pub sentence_translation:
+        Option<std::sync::mpsc::Receiver<Result<qingjian_core::Encounter, String>>>,
+
     pub cloud_test: CloudTest,
 
     pub update: UpdateCheck,
@@ -195,6 +198,7 @@ impl Settings {
             notice: None,
             sources_open: false,
             fields: HashMap::new(),
+            sentence_translation: None,
             cloud_test: CloudTest::default(),
             update: UpdateCheck::load(),
             recording: None,

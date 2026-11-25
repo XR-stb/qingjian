@@ -16,6 +16,9 @@ pub struct ExampleCollector {
     /// 上一处句末之后上屏的文字。
     sentence: String,
 
+    /// 用户开启原句复习后，仅收当前上下文已经上屏的文字。
+    review: String,
+
     /// 等这句写完的词：(学习语言, 译词, 带它上屏的中文)。
     waiting: Vec<(Language, String, String)>,
 
@@ -71,7 +74,30 @@ impl ExampleCollector {
         self.finish(&mut emit)
     }
 
+    pub fn review_text(&mut self, text: &str) -> Vec<String> {
+        let mut finished = Vec::new();
+        let mut length = self.review.chars().count();
+        for c in text.chars() {
+            self.review.push(c);
+            length += 1;
+            if is_sentence_end(c) || length >= MAX_SENTENCE {
+                finished.extend(self.take_review());
+                length = 0;
+            }
+        }
+        finished
+    }
+
+    pub fn take_review(&mut self) -> Option<String> {
+        if self.review.is_empty() {
+            return None;
+        }
+        let sentence = std::mem::take(&mut self.review);
+        Some(sentence.trim().to_owned())
+    }
+
     pub fn clear(&mut self) {
+        self.review.clear();
         self.sentence.clear();
         self.waiting.clear();
         self.pieces = 0;

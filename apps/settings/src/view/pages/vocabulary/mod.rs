@@ -2,6 +2,7 @@
 //! 时间线照「今天遇到了哪些词」排（大数字、记忆色带、按天的一条条），词表按词管理。
 
 mod parts;
+mod sentences;
 mod timeline;
 mod words;
 
@@ -37,18 +38,26 @@ pub fn vocabulary(ui: &mut Ui<Message>, page: &Page) -> Result<Vec<NodeId>, Rend
     let mut out = vec![switches(ui, page, book)?];
     match book.view {
         View::Timeline => out.extend(timeline::timeline(ui, page, book)?),
+        View::Sentences => out.extend(sentences::sentences(ui, page, book)?),
         View::Words => out.extend(words::words(ui, page, book)?),
     }
-    out.extend(manage(ui, page, book)?);
+    if book.view != View::Sentences {
+        out.extend(manage(ui, page, book)?);
+    }
     Ok(out)
 }
 
 /// 顶上一行：视图，记过几门语言时再加语言。
 fn switches(ui: &mut Ui<Message>, page: &Page, book: &Vocabulary) -> Result<NodeId, RenderError> {
     let theme = &page.theme;
+    let views = if crate::support::Feature::SentenceReview.here() {
+        &View::ALL[..]
+    } else {
+        &View::ALL[..2]
+    };
     let mut children = vec![
         Segmented::new(
-            &View::ALL.map(View::label),
+            &views.iter().map(|view| view.label()).collect::<Vec<_>>(),
             View::ALL.iter().position(|v| *v == book.view).unwrap_or(0),
         )
         .build(ui, theme, "vocabulary-view", |index| {

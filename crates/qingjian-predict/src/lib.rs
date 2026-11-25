@@ -24,7 +24,7 @@ pub use cloud_predictor::CloudPredictor;
 pub use config::PredictConfig;
 pub use connection::{ConnectionReport, ConnectionTest};
 pub use error::PredictError;
-pub use gloss::CloudGlossFiller;
+pub use gloss::{CloudGlossFiller, translate_saved_sentence};
 
 pub use usage::{
     API_USAGE_FILE, API_USAGE_HOURLY_FILE, ApiUsageHour, ApiUsageHours, ApiUsageStats,

@@ -8,14 +8,16 @@ pub enum View {
     Timeline,
     /// 按词的表：筛选、标认识、导出。
     Words,
+    Sentences,
 }
 
 impl View {
-    pub const ALL: [Self; 2] = [Self::Timeline, Self::Words];
+    pub const ALL: [Self; 3] = [Self::Timeline, Self::Words, Self::Sentences];
 
     pub fn label(self) -> &'static str {
         match self {
             Self::Timeline => tr("vocabulary.view_timeline"),
+            Self::Sentences => tr("vocabulary.sentences"),
             Self::Words => tr("vocabulary.view_words"),
         }
     }

@@ -140,6 +140,9 @@ pub enum ClientMessage {
         command: IndicatorCommand,
     },
 
+    /// 应用收到非组句回车，收起当前原句。不回话。
+    SentenceBoundary { session: SessionId },
+
     /// 关闭会话，释放 Server 侧状态。
     CloseSession {
         /// 会话标识。
@@ -164,6 +167,7 @@ impl ClientMessage {
             | Self::SyncMode { session }
             | Self::ImeSwitched { session }
             | Self::Indicator { session, .. }
+            | Self::SentenceBoundary { session }
             | Self::CloseSession { session } => session,
         }
     }

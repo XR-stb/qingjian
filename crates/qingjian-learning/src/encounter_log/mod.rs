@@ -82,7 +82,7 @@ fn parse_line(line: &str) -> Option<LoggedEncounter> {
     let text = fields.next()?.to_owned();
     let translation = fields.next()?.to_owned();
     let reading = fields.next().unwrap_or_default().to_owned();
-    (!text.is_empty() && !translation.is_empty()).then_some(LoggedEncounter {
+    (!text.is_empty()).then_some(LoggedEncounter {
         time,
         language,
         text,

@@ -27,6 +27,7 @@ impl Settings {
         let confirm_clear = std::mem::take(&mut vocabulary.confirm_clear);
         let result = match message {
             Message::VocabularyView(view) => {
+                vocabulary.revealed_sentence = None;
                 vocabulary.view = view;
                 vocabulary.page = 0;
                 Ok(())
@@ -50,7 +51,39 @@ impl Settings {
                 vocabulary.page = 0;
                 Ok(())
             }
+            Message::VocabularyTranslate(index) => {
+                if self.sentence_translation.is_some() || !self.config.predict.enabled {
+                    return;
+                }
+                let Some((source, _, None)) = vocabulary.sentences.get(index) else {
+                    return;
+                };
+                let config = self.config.predict.clone();
+                let text = source.clone();
+                let language = vocabulary.language;
+                let usage = crate::system::paths::user_dirs()
+                    .map(|dirs| dirs.records().join(qingjian_predict::API_USAGE_FILE));
+                let waker = self.waker.clone();
+                let (sender, receiver) = std::sync::mpsc::channel();
+                self.sentence_translation = Some(receiver);
+                std::thread::spawn(move || {
+                    let answer =
+                        qingjian_predict::translate_saved_sentence(&config, usage, language, text)
+                            .map_err(|error| error.to_string());
+                    let _ = sender.send(answer);
+                    if let Some(waker) = waker {
+                        waker.wake();
+                    }
+                });
+                Ok(())
+            }
+            Message::VocabularyReveal(index) => {
+                vocabulary.revealed_sentence =
+                    (vocabulary.revealed_sentence != Some(index)).then_some(index);
+                Ok(())
+            }
             Message::VocabularyPage(page) => {
+                vocabulary.revealed_sentence = None;
                 vocabulary.page = page;
                 Ok(())
             }

@@ -137,6 +137,12 @@ impl<S: Read + Write> EngineClient<S> {
         }
     }
 
+    pub fn sentence_boundary(&mut self) -> Result<(), ClientError> {
+        self.send(&ClientMessage::SentenceBoundary {
+            session: self.session,
+        })
+    }
+
     /// 组句起始时把应用光标前的文字送给 Server（本地整句模型的前文）。不回话。
     pub fn surrounding(&mut self, text: String) -> Result<(), ClientError> {
         self.send(&ClientMessage::Surrounding {

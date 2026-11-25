@@ -65,6 +65,12 @@ impl Router {
                 self.set_surrounding(session, text);
                 None
             }
+            ClientMessage::SentenceBoundary { session } => {
+                if self.focused == Some(session) && self.config.record_sentences {
+                    self.engine.finish_review_sentence();
+                }
+                None
+            }
             ClientMessage::Privacy { session, private } => {
                 tracing::debug!(?session, private, "输入框私密状态");
                 self.set_privacy(session, private);

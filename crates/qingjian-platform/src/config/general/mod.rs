@@ -246,6 +246,9 @@ pub struct GeneralConfig {
     /// 给离线回归评测与个人模型用。缺省开；关掉就不记，「高级」页可清空。
     pub input_log: bool,
 
+    /// 把已上屏的整句保存在本机以便复习。
+    pub record_sentences: bool,
+
     /// 学习输入习惯：按选择调整候选顺序、记新词与敲错纠正。关掉后不再记，已学的仍参与排序。
     pub learning: bool,
 
@@ -327,6 +330,7 @@ impl Default for GeneralConfig {
             ui_language: String::new(),
             log_level: LogLevel::default(),
             input_log: true,
+            record_sentences: false,
             learning: true,
             system_text_replacements: true,
             menubar_indicator: true,

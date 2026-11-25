@@ -11,3 +11,4 @@ mod prompt;
 mod worker;
 
 pub use cloud_gloss_filler::CloudGlossFiller;
+pub use phrase::translate_saved_sentence;

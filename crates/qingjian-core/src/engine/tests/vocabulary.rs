@@ -171,3 +171,27 @@ fn commits_with_a_translation_become_encounters_and_sentences_go_to_the_cloud() 
     assert_eq!(encounters.lock().unwrap().len(), 2);
     assert_eq!(asked.lock().unwrap().len(), 1);
 }
+
+#[test]
+fn local_review_records_only_completed_nonprivate_sentences_without_cloud() {
+    let encounters = Encounters::default();
+    let mut engine = engine()
+        .with_translator(Box::new(FixedTranslator))
+        .with_vocabulary_tracker(Box::new(ExampleBook(
+            Examples::default(),
+            encounters.clone(),
+        )));
+    engine.note_text("不开记录。");
+    engine.set_record_sentences(true);
+    engine.note_text("我晚点");
+    engine.note_text("发给你。回头聊！");
+    engine.note_text("不保存半句");
+    engine.set_private(true);
+    engine.note_text("密码框不记录。");
+    engine.set_private(false);
+    engine.note_text("明天再说");
+    engine.break_chain();
+    let encounters = encounters.lock().unwrap();
+    let texts: Vec<_> = encounters.iter().map(|e| e.text.as_str()).collect();
+    assert_eq!(texts, ["我晚点发给你。", "回头聊！", "明天再说"]);
+}

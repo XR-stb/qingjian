@@ -33,6 +33,9 @@ pub struct InputSettings {
     #[serde(default)]
     pub shift_letter_compose: bool,
 
+    #[serde(default)]
+    pub record_sentences: bool,
+
     /// 重连时先取 Server 的模式，避免旧 DLL 状态覆盖初始模式或按应用记忆。
     #[serde(default)]
     pub restore_mode: bool,
@@ -78,6 +81,7 @@ impl Default for InputSettings {
             english_mode: true,
             double_shift_input: ThirdInputMethod::Off,
             shift_letter_compose: false,
+            record_sentences: false,
             restore_mode: false,
             toggle_traditional: None,
             english_candidates: true,

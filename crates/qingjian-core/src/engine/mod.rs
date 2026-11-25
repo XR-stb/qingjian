@@ -298,6 +298,8 @@ pub struct Engine {
     metered: bool,
 
     /// 学习语言的词汇记录（见过 / 上屏过哪些译词）；缺省不记也不标生词。
+    record_sentences: bool,
+
     vocabulary: Box<dyn VocabularyTracker>,
 
     /// 释义兜底：释义表里没有的词上屏后问云端；缺省不问。
@@ -630,6 +632,7 @@ impl Engine {
             committed_since_break: false,
             meter: Box::new(NoUsageMeter),
             metered: true,
+            record_sentences: false,
             vocabulary: Box::new(NoVocabularyTracker),
             gloss_filler: Box::new(NoGlossFiller),
             displayed: Vec::new(),

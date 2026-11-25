@@ -152,6 +152,8 @@ impl App for Settings {
             | Message::VocabularyFilter(_)
             | Message::VocabularySort(_)
             | Message::VocabularyPage(_)
+            | Message::VocabularyReveal(_)
+            | Message::VocabularyTranslate(_)
             | Message::VocabularyKnown(..)
             | Message::VocabularyRemove(_)
             | Message::VocabularyClear
@@ -350,6 +352,22 @@ impl App for Settings {
 
     fn wake(&mut self) -> bool {
         let mut changed = self.search.expire(Instant::now());
+        if let Some(answer) = self
+            .sentence_translation
+            .as_ref()
+            .and_then(|rx| rx.try_recv().ok())
+        {
+            self.sentence_translation = None;
+            match answer.and_then(crate::vocabulary::save_translation) {
+                Ok(()) => {
+                    if let Some(book) = &mut self.vocabulary {
+                        book.reload();
+                    }
+                }
+                Err(message) => self.notice = Some(("sentence-translation", message)),
+            }
+            changed = true;
+        }
         if let Some(text) = self.cloud_test.finish() {
             self.notice = Some(("cloud", text));
             changed = true;
