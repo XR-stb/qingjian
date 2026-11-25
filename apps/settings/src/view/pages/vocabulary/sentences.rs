@@ -78,7 +78,7 @@ pub fn sentences(
                 row = row.control(button);
             }
         }
-        rows.push(row.info(&detail).build(ui, theme)?);
+        rows.push(row.detail(&detail).build(ui, theme)?);
     }
     if pages > 1 {
         rows.push(pager(ui, page, current, pages)?);
