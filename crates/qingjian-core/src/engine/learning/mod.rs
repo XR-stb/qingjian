@@ -18,6 +18,32 @@ pub use learner::{Learner, NoLearner};
 pub(super) use muted::MutedLearner;
 
 impl Engine {
+    pub fn set_floating_gloss(&mut self, enabled: bool) {
+        self.floating_gloss = enabled;
+        if !enabled {
+            self.clear_gloss_preview();
+        }
+    }
+
+    pub fn clear_gloss_preview(&mut self) {
+        self.gloss_source = None;
+        self.gloss_preview = None;
+    }
+
+    pub fn take_gloss_preview(&mut self) -> Option<String> {
+        self.gloss_preview.take()
+    }
+
+    pub(super) fn preview_gloss(&mut self, source: &str, translated: &str) {
+        if self.floating_gloss
+            && !self.private
+            && !translated.is_empty()
+            && self.gloss_source.as_deref() == Some(source)
+        {
+            self.gloss_preview = Some(format!("{source}  ·  {translated}"));
+        }
+    }
+
     /// 取回释义兜底写好的释义，记进译者（个人释义表）；返回学了几条。壳定时调，不阻塞。
     /// 结果的语言与当前学习语言对不上（中途切过语言）就丢。
     pub fn poll_glosses(&mut self) -> usize {
@@ -27,6 +53,9 @@ impl Engine {
             if gloss.translation.language == self.translator.language() {
                 tracing::debug!(word = %gloss.word, "释义兜底写入个人释义表");
                 // 兜底只为刚上屏的词问：它也算一次相遇
+                if let Some(sense) = gloss.translation.senses().first() {
+                    self.preview_gloss(&gloss.word, &sense.text);
+                }
                 self.record_encounter(&gloss.word, &gloss.translation, 0);
                 self.translator.learn(&gloss.word, gloss.translation);
                 learned += 1;
@@ -34,6 +63,7 @@ impl Engine {
         }
         for encounter in self.gloss_filler.poll_translations() {
             if encounter.language == self.translator.language() {
+                self.preview_gloss(&encounter.text, &encounter.translation);
                 self.vocabulary.record_encounter(&encounter);
             }
         }
@@ -64,6 +94,9 @@ impl Engine {
             return;
         }
         if self.gloss_filler.is_enabled() {
+            if self.floating_gloss {
+                self.gloss_source = Some(text.to_owned());
+            }
             self.gloss_filler.translate(language, text);
         }
     }
@@ -156,6 +189,10 @@ impl Engine {
         if let Some(sentence) = self.examples.take_review() {
             self.save_local_sentence(sentence);
         }
+    }
+
+    pub fn finish_review_line(&mut self) {
+        self.finish_examples();
     }
 
     /// 上文断开：手上那句话就算写完了。

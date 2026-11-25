@@ -26,6 +26,8 @@ pub struct RouterConfig {
 
     pub record_sentences: bool,
 
+    pub floating_gloss: bool,
+
     /// 中文组句中小键盘数字的用途（`[general] numpad_digit`）。
     pub numpad_digit: NumpadDigit,
 
@@ -226,6 +228,7 @@ impl From<&Config> for RouterConfig {
             cloud_enabled: config.predict.enabled,
             shift_letter_compose: config.general.shift_letter.compose(),
             record_sentences: config.general.record_sentences,
+            floating_gloss: config.general.floating_gloss,
             numpad_digit: config.general.numpad_digit,
             layout: config.general.layout,
             horizontal_grid: config.general.horizontal_grid,

@@ -5,11 +5,20 @@ mod sink;
 
 use qingjian_platform::protocol::{Frame, ScreenRect, SessionId};
 use qingjian_render::Mode;
+use std::time::{Duration, Instant};
 
 pub use self::sink::{CandidateMenu, CandidateMouse, CandidateSink, NoopSink, RenderSettings};
 use super::Router;
 
 impl Router {
+    pub(super) fn clear_gloss_hint(&mut self) {
+        self.engine.clear_gloss_preview();
+        self.gloss_rect = None;
+        if self.gloss_hint.take().is_some() {
+            self.hide_candidate_window();
+        }
+    }
+
     /// 空帧收窗口；非空且已知光标矩形就重绘；还没收到矩形（组句刚起）先不显示，免得在旧位置闪一下。
     /// 符号面板开着时画面板，候选窗收起。
     pub(super) fn reconcile_candidates(&mut self, frame: &Frame) {
@@ -18,12 +27,34 @@ impl Router {
             return;
         }
         self.hide_panel_window();
-        if frame.is_empty() {
+        let annotated;
+        let mut showing_hint = false;
+        if self.config.floating_gloss
+            && !self.engine.is_private()
+            && let Some(text) = self.engine.take_gloss_preview()
+        {
+            self.gloss_hint = Some((text, Instant::now() + Duration::from_secs(5)));
+        }
+        let frame = if let Some((hint, until)) = &self.gloss_hint
+            && Instant::now() < *until
+            && frame.notice.is_none()
+            && self.translation.is_none()
+        {
+            annotated = Frame {
+                notice: Some(hint.clone()),
+                ..frame.clone()
+            };
+            showing_hint = true;
+            &annotated
+        } else {
+            frame
+        };
+        if frame.is_empty() && !showing_hint {
             self.engine.note_displayed(std::iter::empty());
             // 组句结束：顺带清掉键位提示「卡住时显示」的状态
             self.key_hint_view();
             self.hide_candidate_window();
-        } else if let Some(rect) = self.last_rect {
+        } else if let Some(rect) = self.last_rect.or(self.gloss_rect.filter(|_| showing_hint)) {
             let mode = self.input_mode();
             let key_hint = self.key_hint_view();
             let unchanged = matches!(&self.last_shown,
@@ -60,6 +91,7 @@ impl Router {
             return;
         }
         self.last_rect = Some(rect);
+        self.gloss_rect = Some(rect);
         // 自绘窗吃未降级的帧（降级只作用于发给 DLL 的那份）
         let frame = self.self_drawn_frame();
         self.reconcile_candidates(&frame);

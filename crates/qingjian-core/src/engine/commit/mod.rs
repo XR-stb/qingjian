@@ -242,6 +242,20 @@ impl Engine {
         }
         let log_id = self.log_commit(&keys, &candidate.text, source);
         self.meter_commit(&candidate.text, source, false);
+        if self.floating_gloss && !self.private && candidate.kind != CandidateKind::English {
+            self.gloss_source = Some(candidate.text.clone());
+            let local_gloss = candidate
+                .translation
+                .is_none()
+                .then(|| self.translator.translate(&candidate.text))
+                .flatten();
+            if let Some(translation) = candidate.translation.as_ref().or(local_gloss.as_ref())
+                && translation.language == self.translator.language()
+                && let Some(sense) = translation.senses().get(used_sense.unwrap_or(0))
+            {
+                self.preview_gloss(&candidate.text, &sense.text);
+            }
+        }
         // 上屏带译词的中文候选：那一刻用户看着这条译词，记进词汇（英文候选的中文释义不是学习语言，不记）
         if !self.private
             && candidate.kind != CandidateKind::English

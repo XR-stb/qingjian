@@ -625,6 +625,8 @@ available = "有新版本 {version}"
 latest = "已是最新版本"
 
 [vocabulary]
+floating_gloss = "打字时悬浮显示译文"
+floating_gloss_info = "选词上屏后，中文和译文在光标附近停留约 5 秒。"
 translate_one = "发给云服务补译"
 translating = "正在翻译所选原句…"
 sentences = "我常说的话"

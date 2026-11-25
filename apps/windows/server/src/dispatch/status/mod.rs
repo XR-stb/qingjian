@@ -44,6 +44,7 @@ impl Router {
     }
 
     pub(super) fn handle_ime_switched(&mut self) {
+        self.clear_gloss_hint();
         self.ime_active = false;
         self.reconcile_status();
     }

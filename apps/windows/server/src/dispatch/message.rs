@@ -67,7 +67,7 @@ impl Router {
             }
             ClientMessage::SentenceBoundary { session } => {
                 if self.focused == Some(session) && self.config.record_sentences {
-                    self.engine.finish_review_sentence();
+                    self.engine.finish_review_line();
                 }
                 None
             }

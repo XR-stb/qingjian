@@ -625,6 +625,8 @@ available = "Version {version} is available"
 latest = "You're up to date"
 
 [vocabulary]
+floating_gloss = "Show floating translations while typing"
+floating_gloss_info = "Keep the original and translation near the caret for about five seconds after committing text."
 translate_one = "Translate with cloud service"
 translating = "Translating your selected sentence…"
 sentences = "My sentences"

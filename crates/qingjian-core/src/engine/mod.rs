@@ -300,6 +300,12 @@ pub struct Engine {
     /// 学习语言的词汇记录（见过 / 上屏过哪些译词）；缺省不记也不标生词。
     record_sentences: bool,
 
+    floating_gloss: bool,
+
+    gloss_source: Option<String>,
+
+    gloss_preview: Option<String>,
+
     vocabulary: Box<dyn VocabularyTracker>,
 
     /// 释义兜底：释义表里没有的词上屏后问云端；缺省不问。
@@ -633,6 +639,9 @@ impl Engine {
             meter: Box::new(NoUsageMeter),
             metered: true,
             record_sentences: false,
+            floating_gloss: false,
+            gloss_source: None,
+            gloss_preview: None,
             vocabulary: Box::new(NoVocabularyTracker),
             gloss_filler: Box::new(NoGlossFiller),
             displayed: Vec::new(),

@@ -151,6 +151,10 @@ pub struct Router {
     /// 聚焦会话最近报来的光标矩形；云联想异步到达时按它原地重摆候选窗口。
     last_rect: Option<ScreenRect>,
 
+    gloss_rect: Option<ScreenRect>,
+
+    gloss_hint: Option<(String, Instant)>,
+
     /// 上次真正显示的帧与位置：没变就不重画（组字期间的空转 Poll 很多）。
     last_shown: Option<(Frame, Mode, ScreenRect, Option<KeyHintView>)>,
 
@@ -191,6 +195,7 @@ pub struct Router {
 
 impl Router {
     pub fn new(mut engine: Engine, config: RouterConfig) -> Self {
+        engine.set_floating_gloss(config.floating_gloss);
         let english = config.english_mode && config.default_english;
         engine.set_pair_punctuation(config.pair_punctuation, config.english_pair_punctuation);
         Self {
@@ -227,6 +232,8 @@ impl Router {
             app_modes: HashMap::new(),
             ime_active: false,
             last_rect: None,
+            gloss_rect: None,
+            gloss_hint: None,
             last_shown: None,
             panel: None,
             last_panel: None,

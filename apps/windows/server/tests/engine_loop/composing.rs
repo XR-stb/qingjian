@@ -399,3 +399,30 @@ fn space_on_an_email_address_commits_it_without_the_space() {
     assert_eq!(commit.as_deref(), Some("qingjian@qq.com"));
     assert!(after.is_empty());
 }
+
+#[test]
+fn floating_gloss_stays_visible_after_commit_and_during_next_composition() {
+    let mut router = router_with(RouterConfig {
+        floating_gloss: true,
+        ..RouterConfig::default()
+    });
+    let sink = RecordingCandidates::default();
+    router.set_candidate_sink(Box::new(sink.clone()));
+    let (_, _, frame) = type_letters(&mut router, "nihao");
+    let slot = slot_of(&frame, "你好");
+    router.handle(ClientMessage::PositionCandidates {
+        session: SESSION,
+        rect: rect(),
+    });
+    let (_, commit, after) = press(&mut router, digit(slot));
+    assert_eq!(commit.as_deref(), Some("你好"));
+    assert!(after.is_empty());
+    assert!(after.notice.is_none());
+    let hint = || sink.0.lock().unwrap().last().and_then(|f| f.notice.clone());
+    assert_eq!(hint().as_deref(), Some("你好  ·  hello"));
+    press(&mut router, letter('w'));
+    assert_eq!(hint().as_deref(), Some("你好  ·  hello"));
+    std::thread::sleep(std::time::Duration::from_millis(5050));
+    router.tick();
+    assert!(hint().is_none());
+}

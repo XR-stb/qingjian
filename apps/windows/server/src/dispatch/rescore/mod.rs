@@ -9,7 +9,7 @@ mod loader;
 mod models;
 mod state;
 
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use qingjian_core::CandidateLayout;
 use qingjian_platform::LocalModelConfig;
@@ -159,6 +159,18 @@ impl Router {
         self.advance_rescoring();
         self.advance_key_hint();
         self.poll_config_reload();
+        if self.config.floating_gloss && self.focused.is_some() {
+            self.engine.poll_glosses();
+            if self
+                .gloss_hint
+                .as_ref()
+                .is_some_and(|(_, until)| Instant::now() >= *until)
+            {
+                self.gloss_hint = None;
+            }
+            let frame = self.self_drawn_frame();
+            self.reconcile_candidates(&frame);
+        }
     }
 
     /// 防抖到点就发请求；在等结果就收一次，收到了重查并重画当前页。

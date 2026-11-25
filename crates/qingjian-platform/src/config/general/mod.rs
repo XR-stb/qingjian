@@ -249,6 +249,9 @@ pub struct GeneralConfig {
     /// 把已上屏的整句保存在本机以便复习。
     pub record_sentences: bool,
 
+    /// 上屏后在候选窗保留中外文对照。
+    pub floating_gloss: bool,
+
     /// 学习输入习惯：按选择调整候选顺序、记新词与敲错纠正。关掉后不再记，已学的仍参与排序。
     pub learning: bool,
 
@@ -331,6 +334,7 @@ impl Default for GeneralConfig {
             log_level: LogLevel::default(),
             input_log: true,
             record_sentences: false,
+            floating_gloss: false,
             learning: true,
             system_text_replacements: true,
             menubar_indicator: true,

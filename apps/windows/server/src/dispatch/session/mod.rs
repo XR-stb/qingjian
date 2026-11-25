@@ -48,6 +48,9 @@ impl Router {
         }
         if self.focused == Some(session) {
             self.engine.set_private(private);
+            if private {
+                self.clear_gloss_hint();
+            }
         }
     }
 
@@ -69,6 +72,7 @@ impl Router {
     /// 清掉组句、展示状态、在飞的云联想与翻译评审，收起候选窗口。
     pub(super) fn reset_composition(&mut self) {
         self.engine.break_chain();
+        self.clear_gloss_hint();
         self.engine.clear();
         self.vietnamese.clear();
         self.cancel_prediction();

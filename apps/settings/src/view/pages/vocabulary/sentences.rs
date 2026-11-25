@@ -25,7 +25,16 @@ pub fn sentences(
             page.settings.config.general.record_sentences,
             false,
         )?;
-        out.push(group(ui, theme, &[toggle])?);
+        let floating = toggle_info(
+            ui,
+            page,
+            tr("vocabulary.floating_gloss"),
+            Some(tr("vocabulary.floating_gloss_info")),
+            ("general", "floating_gloss"),
+            page.settings.config.general.floating_gloss,
+            false,
+        )?;
+        out.push(group(ui, theme, &[toggle, floating])?);
     }
     if book.sentences.is_empty() {
         out.push(paragraph(
