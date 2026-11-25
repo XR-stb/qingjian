@@ -70,6 +70,7 @@ fn client_messages() -> Vec<ClientMessage> {
         },
         ClientMessage::Commit { session },
         ClientMessage::Poll { session },
+        ClientMessage::SentenceBoundary { session },
         ClientMessage::Surrounding {
             session,
             text: "光标前文".to_owned(),
